@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email Reply</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      background: #f0f0f0;
+      padding: 30px;
+      color: #222;
+    }
+    .wrapper { max-width: 780px; margin: 0 auto; }
+    .toolbar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 10px;
+    }
+    .copy-btn {
+      background: #c8102e;
+      color: #fff;
+      border: none;
+      padding: 8px 18px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 0.3px;
+      transition: background 0.2s;
+    }
+    .copy-btn:hover { background: #a00d24; }
+    .copy-btn.copied { background: #2e7d32; }
+    .email-card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 36px 40px;
+      line-height: 1.6;
+    }
+    .email-card p { margin-bottom: 12px; }
+    h3 {
+      font-size: 14px;
+      font-weight: bold;
+      margin: 20px 0 6px;
+      color: #111;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 16px;
+      font-size: 13px;
+    }
+    th {
+      background: #f5f5f5;
+      border: 1px solid #ccc;
+      padding: 7px 10px;
+      text-align: left;
+      font-weight: bold;
+    }
+    td {
+      border: 1px solid #ccc;
+      padding: 7px 10px;
+      vertical-align: top;
+    }
+    td.yes  { color: #2e7d32; font-weight: bold; }
+    td.no   { color: #c8102e; font-weight: bold; }
+    td.warn { color: #e65100; font-weight: bold; }
+    td.na   { color: #888; }
+    .note {
+      background: #fff8e1;
+      border-left: 3px solid #f9a825;
+      padding: 10px 14px;
+      margin: 14px 0;
+      font-size: 13px;
+    }
+    .action {
+      background: #e8f4fd;
+      border-left: 3px solid #1565c0;
+      padding: 10px 14px;
+      margin: 14px 0;
+      font-size: 13px;
+    }
+    hr { border: none; border-top: 1px solid #e0e0e0; margin: 22px 0; }
+    ul, ol { margin: 6px 0 12px 20px; }
+    li { margin-bottom: 4px; }
+    .sig { color: #555; font-size: 13px; margin-top: 24px; }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="toolbar">
+    <button class="copy-btn" onclick="copyEmail()">Copy Email Text</button>
+  </div>
+  <div class="email-card" id="email-body">
+
+    <p>Hi,</p>
+
+    <p>I wanted to confirm that Falcon Image Assessment at Runtime (IAR) works on ECS with the EC2 launch type. Testing was completed successfully — IAR deployed as a daemon service (one task per EC2 instance) in Docker Socket Mode, and image scan results were visible in the Falcon Console under Cloud Security → Image Assessment → Runtime.</p>
+
+    <h3>Resource Utilization</h3>
+    <p>One thing worth calling out is IAR's resource consumption, which varies depending on how many images are being assessed at a given time:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>State</th>
+          <th>CPU</th>
+          <th>Memory</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Idle</td>
+          <td>~0</td>
+          <td>&lt; 1 GB</td>
+        </tr>
+        <tr>
+          <td>Per image being assessed</td>
+          <td class="warn">Moderate burst</td>
+          <td class="warn">~2–4 GB</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Key factors that drive consumption up:</p>
+    <ul>
+      <li><strong>Number of running images</strong> — more images means more concurrent memory usage</li>
+      <li><strong>Number of image layers</strong> — more layers means more memory for parsing (max layer size is 10 GB)</li>
+      <li><strong>Socket mode</strong> (used here) requires more compute than Watcher mode as it runs as a daemon on every node</li>
+    </ul>
+
+    <div class="note">
+      CrowdStrike does not publish a fixed minimum/maximum memory recommendation due to environment variability. In this test environment, IAR was configured with a <strong>4096 MB hard limit / 256 MB soft reservation</strong> to give enough headroom for image assessment bursts without risking OOM-kill. Monitor actual peak usage in your environment and adjust accordingly.
+    </div>
+
+    <p>The full write-up detailing how this was tested — including architecture, ECS task configuration, deployment steps, and verification — is attached for reference.</p>
+
+    <p>Please let us know if you have any questions.</p>
+
+    <div class="sig">
+      <p>Best regards,</p>
+      <p>Jason McKenzie</p>
+    </div>
+  </div>
+</div>
+<script>
+  function inlineStyles(el) {
+    const clone = el.cloneNode(true);
+    clone.querySelectorAll('.sig').forEach(n => n.style.color = '#222');
+    clone.querySelectorAll('table').forEach(t => {
+      t.style.borderCollapse = 'collapse';
+      t.style.width = '100%';
+      t.style.fontSize = '13px';
+      t.style.marginBottom = '16px';
+    });
+    clone.querySelectorAll('th').forEach(th => {
+      th.style.background = '#f5f5f5';
+      th.style.border = '1px solid #ccc';
+      th.style.padding = '7px 10px';
+      th.style.textAlign = 'left';
+      th.style.fontWeight = 'bold';
+    });
+    clone.querySelectorAll('td').forEach(td => {
+      td.style.border = '1px solid #ccc';
+      td.style.padding = '7px 10px';
+      td.style.verticalAlign = 'top';
+      if (td.classList.contains('yes'))  { td.style.color = '#2e7d32'; td.style.fontWeight = 'bold'; }
+      if (td.classList.contains('no'))   { td.style.color = '#c8102e'; td.style.fontWeight = 'bold'; }
+      if (td.classList.contains('warn')) { td.style.color = '#e65100'; td.style.fontWeight = 'bold'; }
+      if (td.classList.contains('na'))   { td.style.color = '#888'; }
+    });
+    clone.querySelectorAll('.note').forEach(n => {
+      n.style.background = '#fff8e1';
+      n.style.borderLeft = '3px solid #f9a825';
+      n.style.padding = '10px 14px';
+      n.style.margin = '14px 0';
+      n.style.fontSize = '13px';
+    });
+    clone.querySelectorAll('.action').forEach(n => {
+      n.style.background = '#e8f4fd';
+      n.style.borderLeft = '3px solid #1565c0';
+      n.style.padding = '10px 14px';
+      n.style.margin = '14px 0';
+      n.style.fontSize = '13px';
+    });
+    clone.querySelectorAll('hr').forEach(n => {
+      n.style.border = 'none';
+      n.style.borderTop = '1px solid #e0e0e0';
+      n.style.margin = '22px 0';
+    });
+    clone.querySelectorAll('h3').forEach(n => {
+      n.style.fontSize = '14px';
+      n.style.fontWeight = 'bold';
+      n.style.margin = '20px 0 6px';
+    });
+    clone.querySelectorAll('p').forEach(n => { n.style.marginBottom = '12px'; });
+    return clone.innerHTML;
+  }
+
+  function copyEmail() {
+    const btn = document.querySelector('.copy-btn');
+    const emailBody = document.getElementById('email-body');
+    const richHtml = `<div style="font-family:Arial,sans-serif;font-size:14px;color:#222;line-height:1.6;">${inlineStyles(emailBody)}</div>`;
+
+    const succeed = () => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy Email Text'; btn.classList.remove('copied'); }, 2500);
+    };
+
+    try {
+      const item = new ClipboardItem({
+        'text/html':  new Blob([richHtml], { type: 'text/html' }),
+        'text/plain': new Blob([emailBody.innerText], { type: 'text/plain' })
+      });
+      navigator.clipboard.write([item]).then(succeed).catch(() => {
+        navigator.clipboard.writeText(emailBody.innerText).then(succeed);
+      });
+    } catch {
+      navigator.clipboard.writeText(emailBody.innerText).then(succeed);
+    }
+  }
+</script>
+</body>
+</html>
