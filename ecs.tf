@@ -122,6 +122,7 @@ resource "aws_autoscaling_group" "ecs" {
   desired_capacity    = var.desired_capacity
   min_size            = var.min_size
   max_size            = var.max_size
+  force_delete        = true
 
   launch_template {
     id      = aws_launch_template.ecs.id
@@ -145,6 +146,9 @@ resource "aws_autoscaling_group" "ecs" {
 
   lifecycle {
     ignore_changes = [desired_capacity]
+    # Allow Terraform to modify protect_from_scale_in during destroy
+    # so instances can be terminated without waiting for ECS draining
+    create_before_destroy = false
   }
 
   instance_refresh {
@@ -164,7 +168,7 @@ resource "aws_ecs_capacity_provider" "main" {
 
   auto_scaling_group_provider {
     auto_scaling_group_arn         = aws_autoscaling_group.ecs.arn
-    managed_termination_protection = "ENABLED"
+    managed_termination_protection = "DISABLED"
 
     managed_scaling {
       maximum_scaling_step_size = 2
